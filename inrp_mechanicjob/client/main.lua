@@ -924,7 +924,6 @@ end)
 Citizen.CreateThread(function()
 
 	local blip = AddBlipForCoord(Config.Blip.Pos.x, Config.Blip.Pos.y, Config.Blip.Pos.z)
-
 	SetBlipSprite (blip, Config.Blip.Sprite)
 	SetBlipDisplay(blip, Config.Blip.Display)
 	SetBlipScale  (blip, Config.Blip.Scale)
@@ -1225,8 +1224,8 @@ end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
 RegisterNetEvent('esx:playerLoaded')
-AddEventHandler('esx:playerLoaded', function(inrp_mechanicjoblayer)
-	PlayerData = inrp_mechanicjoblayer
+AddEventHandler('esx:playerLoaded', function(xPlayer)
+	PlayerData = xPlayer
 	ESX.TriggerServerCallback('esx_mechanicjob:getVehiclesPrices', function(vehicles)
 		Vehicles = vehicles
 	end)
