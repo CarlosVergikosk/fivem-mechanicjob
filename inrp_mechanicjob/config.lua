@@ -164,7 +164,7 @@ menuConfigs = {
     }
 }
 
- Submenu configuration
+--Submenu configuration
 subMenuConfigs = {
     --[[['MECsubmenu1'] = {
         data = {
