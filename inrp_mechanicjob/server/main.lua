@@ -307,6 +307,10 @@ ESX.RegisterServerCallback('esx_mechanicjob:getVehiclesPrices', function(source,
 					model = result[i].model,
 					price = result[i].price
 				})
+				print(vehicles,{
+					model = result[i].model,
+					price = result[i].price
+				})
 			end
 
 			Vehicles = vehicles
