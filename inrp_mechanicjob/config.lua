@@ -34,7 +34,7 @@ Config.Blip = {
 	Sprite  = 446,
 	Display = 4,
 	Scale   = 0.8,
-	Colour  = 5,
+	Colour  = 5
 }
 
 Config.Zones = {
