@@ -1090,6 +1090,7 @@ function OpenLSAction()
 			local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 71)
 			FreezeEntityPosition(vehicle, true)
 			myCar = ESX.Game.GetVehicleProperties(vehicle)
+			print(myCar)
 			ESX.UI.Menu.CloseAll()
 			GetAction({value = 'main'})
 		end
@@ -1341,7 +1342,7 @@ function UpdateMods(data)
 	if data.modType ~= nil then
 		local props = {}
 		
-		if data.wheelType ~= nil then
+		if data.wheelType then
 			props['wheels'] = data.wheelType
 			ESX.Game.SetVehicleProperties(vehicle, props)
 			props = {}
@@ -1372,6 +1373,7 @@ function GetAction(data)
 	local coords 		= GetEntityCoords(GetPlayerPed(-1))
 	local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 	local currentMods = ESX.Game.GetVehicleProperties(vehicle)
+	myCar = currentMods
 	if data.value == 'modSpeakers' or
 		data.value == 'modTrunk' or
 		data.value == 'modHydrolic' or
