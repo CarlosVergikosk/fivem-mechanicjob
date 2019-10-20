@@ -273,41 +273,34 @@ AddEventHandler('esx_mechanicjob:buyMod', function(price)
 end)
 
 RegisterServerEvent('esx_mechanicjob:refreshOwnedVehicle')
-AddEventHandler('esx_mechanicjob:refreshOwnedVehicle', function(myCar)
+AddEventHandler('esx_mechanicjob:refreshOwnedVehicle', function(vehicleProps)
 	local xPlayer = ESX.GetPlayerFromId(source)
 
-	MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE @plate = plate', {
-        ['@plate'] = myCar.plate
-    }, function(result)
-        if result[1] then
-            local vehicle = json.decode(result[1].vehicle)
+	MySQL.Async.fetchAll('SELECT vehicle FROM owned_vehicles WHERE plate = @plate', {
+		['@plate'] = vehicleProps.plate
+	}, function(result)
+		if result[1] then
+			local vehicle = json.decode(result[1].vehicle)
 
-            if vehicle.model == myCar.model then
-
-                MySQL.Async.execute('UPDATE `owned_vehicles` SET `vehicle` = @vehicle WHERE `plate` = @plate',
-                    {
-                        ['@plate'] = myCar.plate,
-                        ['@vehicle'] = json.encode(myCar)
-                    })
-
-            else
-				print(('esx_mechanicjob: %s attempted to upgrade an vehicle with model mismatch!'):format(xPlayer.identifier))
+			if vehicleProps.model == vehicle.model then
+				MySQL.Async.execute('UPDATE owned_vehicles SET vehicle = @vehicle WHERE plate = @plate', {
+					['@plate'] = vehicleProps.plate,
+					['@vehicle'] = json.encode(vehicleProps)
+				})
+			else
+				print(('esx_mechanicjob: %s attempted to upgrade vehicle with mismatching vehicle model!'):format(xPlayer.identifier))
 			end
-        end
-    end)
+		end
+	end)
 end)
 
 ESX.RegisterServerCallback('esx_mechanicjob:getVehiclesPrices', function(source, cb)
-	if Vehicles == nil then
-		MySQL.Async.fetchAll('SELECT * FROM vehicles', {}, function(result) 
+	if not Vehicles then
+		MySQL.Async.fetchAll('SELECT * FROM vehicles', {}, function(result)
 			local vehicles = {}
 
 			for i=1, #result, 1 do
 				table.insert(vehicles, {
-					model = result[i].model,
-					price = result[i].price
-				})
-				print(vehicles,{
 					model = result[i].model,
 					price = result[i].price
 				})
