@@ -8,7 +8,7 @@
 -----------------------------------------------------------------------
 Config                            = {}
 Config.Locale = 'en'
-Config.DrawDistance = 2.0
+Config.DrawDistance = 2.1
 Config.BuyItems  = 25
 Config.MaxInService               = -1
 Config.EnablePlayerManagement     = true
@@ -34,7 +34,7 @@ Config.Blip = {
 	Sprite  = 446,
 	Display = 4,
 	Scale   = 0.8,
-	Colour  = 5
+	Colour  = 5,
 }
 
 Config.Zones = {
@@ -157,7 +157,7 @@ menuConfigs = {
                     minRadiusPercent = 0.25,
                     maxRadiusPercent = 0.55,
                     labels = {"imgsrc:faturas.png", "imgsrc:anim.png", "imgsrc:limp.png", "imgsrc:del.png", "imgsrc:rebocar.png", "imgsrc:spawn.png"},
-                    commands = {"faturas"--[[,"MECsubmenu1"]] ,"limparveiculo", "delveiculo", "rebveiculo","MECsubmenu2"}
+                    commands = {"faturas","MECsubmenu1" ,"limparveiculo", "delveiculo", "rebveiculo","MECsubmenu2"}
                 }
             }
         }
@@ -166,7 +166,7 @@ menuConfigs = {
 
 --Submenu configuration
 subMenuConfigs = {
-    --[[['MECsubmenu1'] = {
+    ['MECsubmenu1'] = {
         data = {
             keybind = 166,
             style = {
@@ -210,7 +210,7 @@ subMenuConfigs = {
                 }
             }
         }
-    },]]
+    },
 	['MECsubmenu2'] = {
         data = {
             keybind = 166,
