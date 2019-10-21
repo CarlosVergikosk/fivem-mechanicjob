@@ -21,6 +21,7 @@ data_file 'DLC_ITYP_REQUEST' 'stream/v_int_40.ytyp'
 client_scripts {
 	'@es_extended/locale.lua',
 	'locales/en.lua',
+	'locales/pt.lua',
 	'locales/br.lua',
 	'gui.lua',
 	'config.lua',
@@ -31,6 +32,7 @@ server_scripts {
 	'@mysql-async/lib/MySQL.lua',
 	'@es_extended/locale.lua',
 	'locales/en.lua',
+	'locales/pt.lua',
 	'locales/br.lua',
 	'config.lua',
 	'server/main.lua'
