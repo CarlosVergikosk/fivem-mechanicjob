@@ -38,6 +38,10 @@ local APPzR 	= 0.0
 local dropkey 	= 161 -- Key to drop/get the props
 local closestEntity = 0
 
+local Interior = GetInteriorAtCoords(440.84, -983.14, 30.69)
+
+LoadInterior(Interior)
+
 Citizen.CreateThread(function()
 	while ESX == nil do
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
@@ -73,9 +77,6 @@ end)
 -- Prop list, you can add as much as you want
 attachPropList = {
 
-    --[[["imp_prop_car_jack_01a"] = { 
-        ["model"] = "imp_prop_car_jack_01a", ["bone"] = 28422, ["x"] = 0.0,["y"] = -0.8,["z"] = -1.3,["xR"] = 12.0,["yR"] = 0.0, ["zR"] = 0.0 
-    },]]
 	["prop_roadcone02a"] = { 
         ["model"] = "prop_roadcone02a", ["bone"] = 28422, ["x"] = 0.6,["y"] = -0.15,["z"] = -0.1,["xR"] = 315.0,["yR"] = 288.0, ["zR"] = 0.0 
     },
@@ -211,13 +212,6 @@ RegisterNetEvent('inrp_mechanicjob:attachItem')
 AddEventHandler('inrp_mechanicjob:attachItem', function(item)
     TriggerEvent("inrp_mechanicjob:attachProp",attachPropList[item]["model"], attachPropList[item]["bone"], attachPropList[item]["x"], attachPropList[item]["y"], attachPropList[item]["z"], attachPropList[item]["xR"], attachPropList[item]["yR"], attachPropList[item]["zR"])
 end)
-
---[[car_engine
-RegisterNetEvent('attach:imp_prop_car_jack_01a')
-AddEventHandler('attach:imp_prop_car_jack_01a', function()
-	holdAnim()
-    TriggerEvent("inrp_mechanicjob:attachItem","imp_prop_car_jack_01a")
-end)]]
 
 --prop_cs_trolley_01
 RegisterNetEvent('attach:prop_cs_trolley_01')
@@ -492,7 +486,7 @@ function RegisterCommands()
 					exports['mythic_notify']:SendAlert('error', 'Valor Inválido!')
 				else
 					local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
-					if closestPlayer == -1 or closestDistance > 3.0 then
+					if closestPlayer == -1 or closestDistance > Config.DrawDistance then
 						exports['mythic_notify']:SendAlert('error', 'Nenhum jogador por perto!')
 					else
 						menu.close()
