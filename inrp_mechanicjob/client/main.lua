@@ -1624,22 +1624,22 @@ function Main()
     Menu.SetupMenu("mainmenu", "BENNY'S")
     Menu.Switch(nil, "mainmenu")
 	
-	Menu.addOption("mainmenu", function() if (Menu.Option("Ligar máquina")) then
+	Menu.addOption("mainmenu", function() if (Menu.Option("Turn on Machine")) then
 		spawnProp("nacelle", elevatorBaseX, elevatorBaseY, elevatorBaseZ)
 	end end)
 	
-	Menu.addOption("mainmenu", function() if (Menu.Option("Desligar máquina")) then
+	Menu.addOption("mainmenu", function() if (Menu.Option("Turn off Machine")) then
 		DeleteObject(elevatorProp)
 	end end)
 	
-	Menu.addOption("mainmenu", function() if (Menu.Option("Subir")) then
+	Menu.addOption("mainmenu", function() if (Menu.Option("Lift up")) then
 		if elevatorProp ~= nil then
 			elevatorDown = false
 			elevatorUp = true
 		end
 	end end)
 	
-    Menu.addOption("mainmenu", function() if (Menu.Option("Descer")) then
+    Menu.addOption("mainmenu", function() if (Menu.Option("Lift down")) then
 		if elevatorProp ~= nil then
 			elevatorUp = false
 			elevatorDown = true
