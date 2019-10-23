@@ -1367,6 +1367,7 @@ function GetAction(data)
 	local coords 		= GetEntityCoords(GetPlayerPed(-1))
 	local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 	local currentMods = ESX.Game.GetVehicleProperties(vehicle)
+	FreezeEntityPosition(vehicle, true)
 	myCar = currentMods
 	if data.value == 'modSpeakers' or
 		data.value == 'modTrunk' or
