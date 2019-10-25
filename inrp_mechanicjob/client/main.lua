@@ -1083,6 +1083,7 @@ function OpenLSAction()
 			local coords 		= GetEntityCoords(GetPlayerPed(-1))
 			local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 71)
 			FreezeEntityPosition(vehicle, true)
+			FreezeEntityPosition(GetPlayerPed(-1), true)
 			myCar = ESX.Game.GetVehicleProperties(vehicle)
 			print(myCar)
 			ESX.UI.Menu.CloseAll()
@@ -1303,6 +1304,7 @@ function OpenLSMenu(elems, menuName, menuTitle, parent)
 			local coords 		= GetEntityCoords(GetPlayerPed(-1))
 			local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 			FreezeEntityPosition(vehicle, false)
+			FreezeEntityPosition(GetPlayerPed(-1), false)
 			myCar = {}
 		end
 	end, function(data, menu) -- on change
@@ -1369,6 +1371,7 @@ function GetAction(data)
 	local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 	local currentMods = ESX.Game.GetVehicleProperties(vehicle)
 	FreezeEntityPosition(vehicle, true)
+	FreezeEntityPosition(GetPlayerPed(-1), true)
 	myCar = currentMods
 	if data.value == 'modSpeakers' or
 		data.value == 'modTrunk' or
