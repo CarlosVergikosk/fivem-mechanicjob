@@ -27,8 +27,6 @@ Config.Employ = {
 	Coords = { x = -214.05, y = -1318.11, z = 30.89 }
 }
 
-Config.Vehicles = {}
-
 Config.Blip = {
 	Pos     = { x = -200.74, y = -1318.69, z = 31.09 },
 	Sprite  = 446,
