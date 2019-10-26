@@ -22,7 +22,7 @@ client_scripts {
 	'@es_extended/locale.lua',
 	'locales/en.lua',
 	'locales/pt.lua',
-	'locales/br.lua',
+	'locales/pl.lua',
 	'gui.lua',
 	'config.lua',
 	'client/main.lua'
@@ -33,7 +33,7 @@ server_scripts {
 	'@es_extended/locale.lua',
 	'locales/en.lua',
 	'locales/pt.lua',
-	'locales/br.lua',
+	'locales/pl.lua',
 	'config.lua',
 	'server/main.lua'
 }
@@ -41,18 +41,18 @@ server_scripts {
 files {
 	"html/menu.html",
 	"html/raphael.min.js",
-    "html/wheelnav.min.js",
+        "html/wheelnav.min.js",
 	"html/logout.png",
 	"html/faturas.png",
-    "html/anim.png",
+	"html/anim.png",
 	"html/limp.png",
 	"html/del.png",
-    "html/rebocar.png",
+	"html/rebocar.png",
 	"html/logout.png",
 	"html/spawn.png",
 	"html/cone.png",
 	"html/macaco.png",
 	"html/exhaust.png",
-    "html/ferramentas.png"
+	"html/ferramentas.png"
 }
 
