@@ -6,6 +6,7 @@
 
 ESX                = nil
 local PlayersHarvesting  = {}
+local PlayersCrafting = {}
 local Vehicles = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
