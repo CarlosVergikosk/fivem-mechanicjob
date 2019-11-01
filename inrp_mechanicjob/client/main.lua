@@ -1078,7 +1078,7 @@ end)
 function OpenLSAction()
 
 	if IsControlJustReleased(0, 38) and not lsMenuIsShowed then
-		if ((PlayerData.job ~= nil and PlayerData.job.name == 'mechanic') or Config.IsMechanicJobOnly == false then
+		if ((PlayerData.job ~= nil and PlayerData.job.name == 'mechanic') or Config.IsMechanicJobOnly == false) then
 			lsMenuIsShowed = true
 			local coords 		= GetEntityCoords(GetPlayerPed(-1))
 			local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 71)
