@@ -1271,18 +1271,20 @@ function OpenLSMenu(elems, menuName, menuTitle, parent)
 							break
 						end
 					end
-					if isRimMod then
-						price = math.floor(vehiclePrice * data.current.price / 100)
-						TriggerServerEvent("esx_mechanicjob:buyMod", price)
-					elseif v.modType == 11 or v.modType == 12 or v.modType == 13 or v.modType == 15 or v.modType == 16 then
-						price = math.floor(vehiclePrice * v.price[data.current.modNum + 1] / 100)
-						TriggerServerEvent("esx_mechanicjob:buyMod", price)
-					elseif v.modType == 17 then
-						price = math.floor(vehiclePrice * v.price[1] / 100)
-						TriggerServerEvent("esx_mechanicjob:buyMod", price)
-					else
-						price = math.floor(vehiclePrice * v.price / 100)
-						TriggerServerEvent("esx_mechanicjob:buyMod", price)
+					if data.current.price ~= nil then
+						if isRimMod then
+							price = math.floor(vehiclePrice * data.current.price / 100)
+							TriggerServerEvent("esx_mechanicjob:buyMod", price)
+						elseif v.modType == 11 or v.modType == 12 or v.modType == 13 or v.modType == 15 or v.modType == 16 then
+							price = math.floor(vehiclePrice * v.price[data.current.modNum + 1] / 100)
+							TriggerServerEvent("esx_mechanicjob:buyMod", price)
+						elseif v.modType == 17 then
+							price = math.floor(vehiclePrice * v.price[1] / 100)
+							TriggerServerEvent("esx_mechanicjob:buyMod", price)
+						else
+							price = math.floor(vehiclePrice * v.price / 100)
+							TriggerServerEvent("esx_mechanicjob:buyMod", price)
+						end
 					end
 				end
 				menu.close()
