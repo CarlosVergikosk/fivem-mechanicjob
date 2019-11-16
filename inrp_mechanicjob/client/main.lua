@@ -1393,7 +1393,7 @@ function GetAction(data)
 	else
 		SetVehicleDoorsShut(vehicle, false)
 	end
-	local vehiclePrice = 50000
+	local vehiclePrice = 80000
 	for i=1, #Vehicles, 1 do
 		if GetEntityModel(vehicle) == GetHashKey(Vehicles[i].model) then
 			vehiclePrice = Vehicles[i].price
