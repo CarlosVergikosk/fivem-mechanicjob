@@ -5,10 +5,12 @@
 -----------------------------------------------------------------------
 
 ESX                = nil
-local PlayersHarvesting  = {}
-local PlayersCrafting = {}
-local PlayersCrafting2 = {}
-local PlayersCrafting3 = {}
+PlayersHarvesting  = {}
+PlayersHarvesting2 = {}
+PlayersHarvesting3 = {}
+PlayersCrafting    = {}
+PlayersCrafting2   = {}
+PlayersCrafting3   = {}
 local Vehicles = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
@@ -16,44 +18,99 @@ TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 TriggerEvent('esx_phone:registerNumber', 'mechanic', _U('mechanic'), true, true)
 TriggerEvent('esx_society:registerSociety', 'mechanic', 'mechanic', 'society_mechanic', 'society_mechanic', 'society_mechanic', {type = 'public'})
 
-function Harvest(source,item)
-	if PlayersHarvesting[source] == true then
-		local xPlayer = ESX.GetPlayerFromId(source)
-		local CaroToolQuantity = 0
-		CaroToolQuantity = xPlayer.getInventoryItem(item).count
-		if CaroToolQuantity >= 5 then
-			TriggerClientEvent('mythic_notify:client:SendAlert', source, { type = 'error', text = 'Inventário cheio!', length = 2500, style = { ['background-color'] = '#ffffff', ['color'] = '#000000' } })
-		else
-			TriggerEvent('esx_addonaccount:getSharedAccount', 'society_mechanic', function(account)
-				if account.money >= Config.BuyItems then
-					account.removeMoney(Config.BuyItems)
-					xPlayer.addInventoryItem(item, 1)
-					CaroToolQuantity = xPlayer.getInventoryItem(item).count
-					TriggerClientEvent('attach:prop_cs_cardbox_01', source)
-					TriggerEvent('esx_mechanicjob:stopHarvest', source)
-				end
-			end)
-			if CaroToolQuantity == 5 then
-				TriggerClientEvent('mythic_notify:client:SendAlert', source, { type = 'error', text = 'Inventário cheio!', length = 2500, style = { ['background-color'] = '#ffffff', ['color'] = '#000000' } })
+local function Harvest(source)
+	SetTimeout(4000, function()
+
+		if PlayersHarvesting[source] == true then
+			local xPlayer = ESX.GetPlayerFromId(source)
+			local GazBottleQuantity = xPlayer.getInventoryItem('gazbottle').count
+
+			if GazBottleQuantity >= 5 then
+				TriggerClientEvent('esx:showNotification', source, _U('you_do_not_room'))
+			else
+				xPlayer.addInventoryItem('gazbottle', 1)
+				Harvest(source)
 			end
 		end
-	end
+
+	end)
 end
 
 RegisterServerEvent('esx_mechanicjob:startHarvest')
-AddEventHandler('esx_mechanicjob:startHarvest', function(item)
+AddEventHandler('esx_mechanicjob:startHarvest', function()
 	local _source = source
-	local _item = item
-	print(_item)
 	PlayersHarvesting[_source] = true
-	Harvest(_source,_item)
+	TriggerClientEvent('esx:showNotification', _source, _U('recovery_gas_can'))
+	Harvest(source)
 end)
 
 RegisterServerEvent('esx_mechanicjob:stopHarvest')
 AddEventHandler('esx_mechanicjob:stopHarvest', function()
 	local _source = source
 	PlayersHarvesting[_source] = false
-	TriggerClientEvent('esx_mechanicjob:StopMechanic', _source)
+end)
+
+local function Harvest2(source)
+	SetTimeout(4000, function()
+
+		if PlayersHarvesting2[source] == true then
+			local xPlayer = ESX.GetPlayerFromId(source)
+			local FixToolQuantity = xPlayer.getInventoryItem('fixtool').count
+
+			if FixToolQuantity >= 5 then
+				TriggerClientEvent('esx:showNotification', source, _U('you_do_not_room'))
+			else
+				xPlayer.addInventoryItem('fixtool', 1)
+				Harvest2(source)
+			end
+		end
+
+	end)
+end
+
+RegisterServerEvent('esx_mechanicjob:startHarvest2')
+AddEventHandler('esx_mechanicjob:startHarvest2', function()
+	local _source = source
+	PlayersHarvesting2[_source] = true
+	TriggerClientEvent('esx:showNotification', _source, _U('recovery_repair_tools'))
+	Harvest2(_source)
+end)
+
+RegisterServerEvent('esx_mechanicjob:stopHarvest2')
+AddEventHandler('esx_mechanicjob:stopHarvest2', function()
+	local _source = source
+	PlayersHarvesting2[_source] = false
+end)
+
+local function Harvest3(source)
+	SetTimeout(4000, function()
+
+		if PlayersHarvesting3[source] == true then
+			local xPlayer = ESX.GetPlayerFromId(source)
+			local CaroToolQuantity = xPlayer.getInventoryItem('carotool').count
+			if CaroToolQuantity >= 5 then
+				TriggerClientEvent('esx:showNotification', source, _U('you_do_not_room'))
+			else
+				xPlayer.addInventoryItem('carotool', 1)
+				Harvest3(source)
+			end
+		end
+
+	end)
+end
+
+RegisterServerEvent('esx_mechanicjob:startHarvest3')
+AddEventHandler('esx_mechanicjob:startHarvest3', function()
+	local _source = source
+	PlayersHarvesting3[_source] = true
+	TriggerClientEvent('esx:showNotification', _source, _U('recovery_body_tools'))
+	Harvest3(_source)
+end)
+
+RegisterServerEvent('esx_mechanicjob:stopHarvest3')
+AddEventHandler('esx_mechanicjob:stopHarvest3', function()
+	local _source = source
+	PlayersHarvesting3[_source] = false
 end)
 
 local function Craft(source)
@@ -62,6 +119,7 @@ local function Craft(source)
 		if PlayersCrafting[source] == true then
 			local xPlayer = ESX.GetPlayerFromId(source)
 			local GazBottleQuantity = xPlayer.getInventoryItem('gazbottle').count
+
 			if GazBottleQuantity <= 0 then
 				TriggerClientEvent('esx:showNotification', source, _U('not_enough_gas_can'))
 			else
@@ -148,46 +206,57 @@ AddEventHandler('esx_mechanicjob:startCraft3', function()
 	Craft3(_source)
 end)
 
-RegisterServerEvent('esx_mechanicjob:setJob')
-AddEventHandler('esx_mechanicjob:setJob', function(identifier,job,grade)
-	local xTarget = ESX.GetPlayerFromIdentifier(identifier)
-		
-		if xTarget then
-			xTarget.setJob(job, grade)
-		end
-
-end)
-
-
 RegisterServerEvent('esx_mechanicjob:stopCraft3')
 AddEventHandler('esx_mechanicjob:stopCraft3', function()
 	local _source = source
 	PlayersCrafting3[_source] = false
 end)
 
-RegisterServerEvent('esx_mechanicjob:getStockItem')
-AddEventHandler('esx_mechanicjob:getStockItem', function(itemName, count)
-	local xPlayer = ESX.GetPlayerFromId(source)
+RegisterServerEvent('esx_mechanicjob:onNPCJobMissionCompleted')
+AddEventHandler('esx_mechanicjob:onNPCJobMissionCompleted', function()
+	local _source = source
+	local xPlayer = ESX.GetPlayerFromId(_source)
+	local total   = math.random(Config.NPCJobEarnings.min, Config.NPCJobEarnings.max);
 
-	TriggerEvent('esx_addoninventory:getSharedInventory', 'society_mechanic', function(inventory)
-		local item = inventory.getItem(itemName)
-		local sourceItem = xPlayer.getInventoryItem(itemName)
+	if xPlayer.job.grade >= 3 then
+		total = total * 2
+	end
 
-		-- is there enough in the society?
-		if count > 0 and item.count >= count then
-
-			-- can the player carry the said amount of x item?
-			if sourceItem.limit ~= -1 and (sourceItem.count + count) > sourceItem.limit then
-				TriggerClientEvent('esx:showNotification', xPlayer.source, _U('player_cannot_hold'))
-			else
-				inventory.removeItem(itemName, count)
-				xPlayer.addInventoryItem(itemName, count)
-				TriggerClientEvent('esx:showNotification', xPlayer.source, _U('have_withdrawn', count, item.label))
-			end
-		else
-			TriggerClientEvent('esx:showNotification', xPlayer.source, _U('invalid_quantity'))
-		end
+	TriggerEvent('esx_addonaccount:getSharedAccount', 'society_mechanic', function(account)
+		account.addMoney(total)
 	end)
+
+	TriggerClientEvent("esx:showNotification", _source, _U('your_comp_earned').. total)
+end)
+
+ESX.RegisterUsableItem('blowpipe', function(source)
+	local _source = source
+	local xPlayer  = ESX.GetPlayerFromId(source)
+
+	xPlayer.removeInventoryItem('blowpipe', 1)
+
+	TriggerClientEvent('esx_mechanicjob:onHijack', _source)
+	TriggerClientEvent('esx:showNotification', _source, _U('you_used_blowtorch'))
+end)
+
+ESX.RegisterUsableItem('fixkit', function(source)
+	local _source = source
+	local xPlayer  = ESX.GetPlayerFromId(source)
+
+	xPlayer.removeInventoryItem('fixkit', 1)
+
+	TriggerClientEvent('esx_mechanicjob:onFixkit', _source)
+	TriggerClientEvent('esx:showNotification', _source, _U('you_used_repair_kit'))
+end)
+
+ESX.RegisterUsableItem('carokit', function(source)
+	local _source = source
+	local xPlayer  = ESX.GetPlayerFromId(source)
+
+	xPlayer.removeInventoryItem('carokit', 1)
+
+	TriggerClientEvent('esx_mechanicjob:onCarokit', _source)
+	TriggerClientEvent('esx:showNotification', _source, _U('you_used_body_kit'))
 end)
 
 ESX.RegisterServerCallback('esx_mechanicjob:getStockItems', function(source, cb)
@@ -342,4 +411,3 @@ ESX.RegisterUsableItem('carokit', function(source)
 	TriggerClientEvent('esx_mechanicjob:onCarokit', _source)
 	TriggerClientEvent('esx:showNotification', _source, _U('you_used_body_kit'))
 end)
-
