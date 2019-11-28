@@ -96,7 +96,7 @@ attachPropList = {
 
 RegisterNetEvent('inrp_mechanicjob:attachProp')
 AddEventHandler('inrp_mechanicjob:attachProp', function(attachModelSent,boneNumberSent,x,y,z,xR,yR,zR)
-    exports['mythic_notify']:DoHudText('inform', "7 Apanhar/Largar. /re para remover") -- mythic_notify system
+    exports['mythic_notify']:SendAlert('inform', "Prop Spawned. Type /re to remove Object") -- mythic_notify system
     closestEntity = 0
     holdingPackage = true
     local attachModel = GetHashKey(attachModelSent)
@@ -307,7 +307,7 @@ function OpenMechanicActionsMenu()
 				ESX.TriggerServerCallback('esx_society:getVehiclesInGarage', function(vehicles)
 					for i=1, #vehicles, 1 do
 						table.insert(elements, {
-							label = GetDisplayNameFromVehicleModel(vehicles[i].model),
+							label = GetDisplayNameFromVehicleModel(vehicles[i].model) .. ' [' .. vehicles[i].plate .. ']',
 							value = vehicles[i]
 						})
 					end
@@ -339,7 +339,7 @@ function OpenMechanicActionsMenu()
 					{label = _U('tow_truck'), value = 'towtruck2'}
 				}
 
-				if Config.EnablePlayerManagement and PlayerData.job and (grade == 'boss' or grade == 'chief' or grade == 'einrp_mechanicjoberimente') then
+				if Config.EnablePlayerManagement and ESX.PlayerData.job and (ESX.PlayerData.job.grade_name == 'boss' or ESX.PlayerData.job.grade_name == 'chief' or ESX.PlayerData.job.grade_name == 'experimente') then
 					table.insert(elements, {label = 'SlamVan', value = 'slamvan3'})
 				end
 
@@ -407,12 +407,11 @@ function OpenMechanicActionsMenu()
 end
 
 function OpenMechanicHarvestMenu()
-	local grade = PlayerData.job.grade_name
-	if Config.EnablePlayerManagement and PlayerData.job.name == 'mechanic' then
+	if Config.EnablePlayerManagement and ESX.PlayerData.job and ESX.PlayerData.job.grade_name ~= 'recrue' then
 		local elements = {
-			{label = _U('gas_can'), value = 'gazbottle'},
-			{label = _U('repair_tools'), value = 'fixtool'},
-			{label = _U('body_work_tools'), value = 'carotool'}
+			{label = _U('gas_can'), value = 'gaz_bottle'},
+			{label = _U('repair_tools'), value = 'fix_tool'},
+			{label = _U('body_work_tools'), value = 'caro_tool'}
 		}
 
 		ESX.UI.Menu.CloseAll()
@@ -423,27 +422,31 @@ function OpenMechanicHarvestMenu()
 			elements = elements
 		}, function(data, menu)
 			menu.close()
-			if not holdingPackage then
-				TriggerServerEvent('esx_mechanicjob:startHarvest',data.current.value)
-			else
-				exports['mythic_notify']:DoHudText('error', "Já tens algo na mão") -- mythic_notify system
+
+			if data.current.value == 'gaz_bottle' then
+				TriggerServerEvent('esx_mechanicjob:startHarvest')
+			elseif data.current.value == 'fix_tool' then
+				TriggerServerEvent('esx_mechanicjob:startHarvest2')
+			elseif data.current.value == 'caro_tool' then
+				TriggerServerEvent('esx_mechanicjob:startHarvest3')
 			end
 		end, function(data, menu)
 			menu.close()
 			CurrentAction     = 'mechanic_harvest_menu'
+			CurrentActionMsg  = _U('harvest_menu')
 			CurrentActionData = {}
 		end)
 	else
-		ESX.Show(_U('not_experienced_enough'))
+		ESX.ShowNotification(_U('not_experienced_enough'))
 	end
 end
 
 function OpenMechanicCraftMenu()
-	if Config.EnablePlayerManagement and PlayerData.job.name == 'mechanic' then
+	if Config.EnablePlayerManagement and ESX.PlayerData.job and ESX.PlayerData.job.grade_name ~= 'recrue' then
 		local elements = {
-			{label = _U('blowtorch'),  value = 'blowpipe'},
-			{label = _U('repair_kit'), value = 'fixkit'},
-			{label = _U('body_kit'),   value = 'carokit'}
+			{label = _U('blowtorch'),  value = 'blow_pipe'},
+			{label = _U('repair_kit'), value = 'fix_kit'},
+			{label = _U('body_kit'),   value = 'caro_kit'}
 		}
 
 		ESX.UI.Menu.CloseAll()
@@ -466,12 +469,14 @@ function OpenMechanicCraftMenu()
 			menu.close()
 
 			CurrentAction     = 'mechanic_craft_menu'
+			CurrentActionMsg  = _U('craft_menu')
 			CurrentActionData = {}
 		end)
 	else
-		ESX.Showmythic_notify(_U('not_experienced_enough'))
+		ESX.ShowNotification(_U('not_experienced_enough'))
 	end
 end
+
 
 function RegisterCommands()
 	PlayerData = ESX.GetPlayerData()
@@ -483,15 +488,15 @@ function RegisterCommands()
 				local amount = tonumber(data.value)
 
 				if amount == nil or amount < 0 then
-					exports['mythic_notify']:SendAlert('error', 'Valor Inválido!')
+					exports['mythic_notify']:SendAlert('error', 'Invalid Amount!')
 				else
 					local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
 					if closestPlayer == -1 or closestDistance > Config.DrawDistance then
-						exports['mythic_notify']:SendAlert('error', 'Nenhum jogador por perto!')
+						exports['mythic_notify']:SendAlert('error', 'No players nearby!')
 					else
 						menu.close()
 						TriggerServerEvent('esx_billing:sendBill', GetPlayerServerId(closestPlayer), 'society_mechanic', _U('mechanic'), amount)
-						exports['mythic_notify']:SendAlert('success', 'Fatura enviada - Valor: ' .. amount .. '€')
+						exports['mythic_notify']:SendAlert('success', 'You sent invoice of - ₹' .. amount .. '')
 					end
 				end
 			end, function(data, menu)
@@ -505,7 +510,7 @@ function RegisterCommands()
 			local coords    = GetEntityCoords(playerPed)
 
 			if IsPedSittingInAnyVehicle(playerPed) then
-				exports['mythic_notify']:SendAlert('error', 'Tens de estar fora do veículo!')
+				exports['mythic_notify']:SendAlert('error', 'Get out of car to clean it!')
 				return
 			end
 
@@ -518,11 +523,11 @@ function RegisterCommands()
 					SetVehicleDirtLevel(vehicle, 0)
 					ClearPedTasksImmediately(playerPed)
 
-					exports['mythic_notify']:SendAlert('success', 'Veículo Limpo!')
+					exports['mythic_notify']:SendAlert('success', 'Cleaned the Vehicle!!')
 					isBusy = false
 				end)
 			else
-				exports['mythic_notify']:SendAlert('error', 'Nenhum veículo por perto!')
+				exports['mythic_notify']:SendAlert('error', 'No vehicle nearby!')
 			end
 		end, false)
 
@@ -533,19 +538,19 @@ function RegisterCommands()
 				local vehicle = GetVehiclePedIsIn(playerPed, false)
 
 				if GetPedInVehicleSeat(vehicle, -1) == playerPed then
-					exports['mythic_notify']:SendAlert('success', 'Veículo apreedido com sucesso!')
+					exports['mythic_notify']:SendAlert('success', 'Successfully impounded the vehicle!')
 					ESX.Game.DeleteVehicle(vehicle)
 				else
-					exports['mythic_notify']:SendAlert('error', 'Senta-te no banco principal')
+					exports['mythic_notify']:SendAlert('error', 'No vehicle nearby!')
 				end
 			else
 				local vehicle = ESX.Game.GetVehicleInDirection()
 
 				if DoesEntityExist(vehicle) then
-					exports['mythic_notify']:SendAlert('success', 'Veículo apreedido com sucesso!')
+					exports['mythic_notify']:SendAlert('success', 'Successfully impounded the vehicle!')
 					ESX.Game.DeleteVehicle(vehicle)
 				else
-					exports['mythic_notify']:SendAlert('error', 'Aproxima-te do veículo!')
+					exports['mythic_notify']:SendAlert('error', 'No vehicle nearby!')
 				end
 			end
 		end, false)
@@ -567,20 +572,20 @@ function RegisterCommands()
 								CurrentlyTowedVehicle = targetVehicle
 								ESX.Showmythic_notify(_U('vehicle_success_attached'))
 							else
-								exports['mythic_notify']:SendAlert('error', 'Não podes rebocar o teu veículo!')
+								exports['mythic_notify']:SendAlert('error', 'You cannot tow your own vehicle!')
 							end
 						end
 					else
-						exports['mythic_notify']:SendAlert('error', 'Nenhum veículo por perto')
+						exports['mythic_notify']:SendAlert('error', 'No vehicles around')
 					end
 				else
 					AttachEntityToEntity(CurrentlyTowedVehicle, vehicle, 20, -0.5, -12.0, 1.0, 0.0, 0.0, 0.0, false, false, false, false, 20, true)
 					DetachEntity(CurrentlyTowedVehicle, true, true)
 					CurrentlyTowedVehicle = nil
-					exports['mythic_notify']:SendAlert('sucess', 'Veículo apreendido com sucesso!')
+					exports['mythic_notify']:SendAlert('sucess', 'Vehicle Successfully impounded')
 				end
 			else
-				exports['mythic_notify']:SendAlert('error', 'Roboque necessário!')
+				exports['mythic_notify']:SendAlert('error', 'Flat Bed Required!')
 			end
 		end, false)
 		
@@ -600,7 +605,7 @@ function RegisterCommands()
 				holdAnim()
 				TriggerEvent("attach:prop_cs_trolley_01")
 			elseif holdingPackage then
-				exports['mythic_notify']:SendAlert('error', 'Já tens algo na mão!')
+				exports['mythic_notify']:SendAlert('error', 'You already have something in your hand!')
 			end
 			
 		end, false)
@@ -614,7 +619,7 @@ function RegisterCommands()
 				holdAnim()
 				TriggerEvent("attach:prop_engine_hoist")
 			elseif holdingPackage then
-				exports['mythic_notify']:SendAlert('error', 'Já tens algo na mão!')
+				exports['mythic_notify']:SendAlert('error', 'You already have something in your hand!')
 			end
 		end, false)
 		
@@ -626,7 +631,7 @@ function RegisterCommands()
 			elseif not holdingPackage then
 				TriggerEvent("attach:prop_roadcone02a")
 			elseif holdingPackage then
-				exports['mythic_notify']:SendAlert('error', 'Já tens algo na mão!')
+				exports['mythic_notify']:SendAlert('error', 'You already have something in your hand!')
 			end
 		end, false)
 		
@@ -650,7 +655,7 @@ function RegisterCommands()
 				holdAnim()
 				TriggerEvent("attach:prop_engine_hoist")
 			elseif holdingPackage then
-				exports['mythic_notify']:SendAlert('error', 'Já tens algo na mão!')
+				exports['mythic_notify']:SendAlert('error', 'You already have something in your hand!')
 			end
 		end, false)
 		
@@ -662,11 +667,11 @@ function RegisterCommands()
 			elseif not holdingPackage then
 				TriggerEvent("attach:prop_tool_box_04")
 			elseif holdingPackage then
-				exports['mythic_notify']:SendAlert('error', 'Já tens algo na mão!')
+				exports['mythic_notify']:SendAlert('error', 'You already have something in your hand!')
 			end
 		end, false)
 	else
-		exports['mythic_notify']:SendAlert('error', 'Já não tens acesso a esse comando!')
+		exports['mythic_notify']:SendAlert('error', 'You no longer have access to this command!')
 	end
 end
 
@@ -897,6 +902,8 @@ AddEventHandler('esx_mechanicjob:hasExitedMarker', function(zone)
 		TriggerServerEvent('esx_mechanicjob:stopCraft3')
 	elseif zone == 'Garage' then
 		TriggerServerEvent('esx_mechanicjob:stopHarvest')
+		TriggerServerEvent('esx_mechanicjob:stopHarvest2')
+		TriggerServerEvent('esx_mechanicjob:stopHarvest3')
 	end
 
 	CurrentAction = nil
@@ -976,10 +983,10 @@ Citizen.CreateThread(function()
 			if (GetDistanceBetweenCoords(coords,Config.Employ.Coords.x,Config.Employ.Coords.y,Config.Employ.Coords.z) < 3.5) and (PlayerData.job.name ~= 'mechanic') then
 				for i=1,#Config.Employ.Workers do 
 					if Config.Employ.Workers[i].identifier == PlayerData.identifier then
-						DrawText3Ds(Config.Employ.Coords.x,Config.Employ.Coords.y,Config.Employ.Coords.z, 'Pressiona ~g~[E] ~w~para entrar ao serviço!')
+						DrawText3Ds(Config.Employ.Coords.x,Config.Employ.Coords.y,Config.Employ.Coords.z, 'Press ~g~[E] ~w~to open menu!')
 						if IsControlJustReleased(0, 38) then
 							TriggerServerEvent('esx_mechanicjob:setJob',PlayerData.identifier,'mechanic',Config.Employ.Workers[i].grade)
-							exports['mythic_notify']:SendAlert('success', 'Entras-te ao serviço!')
+							exports['mythic_notify']:SendAlert('success', 'You need to be in Mechanic Job to do this.')
 						end
 					end
 				end
