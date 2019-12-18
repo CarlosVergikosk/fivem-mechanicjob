@@ -96,7 +96,7 @@ attachPropList = {
 
 RegisterNetEvent('inrp_mechanicjob:attachProp')
 AddEventHandler('inrp_mechanicjob:attachProp', function(attachModelSent,boneNumberSent,x,y,z,xR,yR,zR)
-    exports['mythic_notify']:DoHudText('inform', "7 Apanhar/Largar. /re para remover") -- mythic_notify system
+    exports['mythic_notify']:SendAlert('inform', "7 Apanhar/Largar. /re para remover") -- mythic_notify system
     closestEntity = 0
     holdingPackage = true
     local attachModel = GetHashKey(attachModelSent)
@@ -426,7 +426,7 @@ function OpenMechanicHarvestMenu()
 			if not holdingPackage then
 				TriggerServerEvent('esx_mechanicjob:startHarvest',data.current.value)
 			else
-				exports['mythic_notify']:DoHudText('error', "Já tens algo na mão") -- mythic_notify system
+				exports['mythic_notify']:SendAlert('error', "Já tens algo na mão") -- mythic_notify system
 			end
 		end, function(data, menu)
 			menu.close()
