@@ -4,6 +4,10 @@ INSERT INTO `addon_account` (name, label, shared) VALUES
 	('society_mechanic', 'Mechanic', 1)
 ;
 
+INSERT INTO datastore (name, label, shared) VALUES
+	('society_mechanic', 'Mechanic', 1)
+;
+
 INSERT INTO `addon_inventory` (name, label, shared) VALUES
 	('society_mechanic', 'Mechanic', 1)
 ;
