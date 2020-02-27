@@ -441,9 +441,9 @@ end
 function OpenMechanicCraftMenu()
 	if Config.EnablePlayerManagement and PlayerData.job.name == 'mechanic' then
 		local elements = {
-			{label = _U('blowtorch'),  value = 'blowpipe'},
-			{label = _U('repair_kit'), value = 'fixkit'},
-			{label = _U('body_kit'),   value = 'carokit'}
+			{label = _U('blowtorch'),  value = 'blow_pipe'},
+			{label = _U('repair_kit'), value = 'fix_kit'},
+			{label = _U('body_kit'),   value = 'caro_kit'}
 		}
 
 		ESX.UI.Menu.CloseAll()
