@@ -47,13 +47,12 @@ Citizen.CreateThread(function()
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 		Citizen.Wait(10)
 	end
-
-	while ESX.GetPlayerData().job == nil do
+	PlayerData = ESX.GetPlayerData()
+	while PlayerData.job == nil do
 		Citizen.Wait(10)
 	end
 	
 	while true do
-		PlayerData = ESX.GetPlayerData()
 		if PlayerData.job.name == 'mechanic' and not registed then
 			RegisterCommands()
 			registed = true
@@ -62,6 +61,11 @@ Citizen.CreateThread(function()
 		end
 		Citizen.Wait(1500)
 	end
+end)
+
+RegisterNetEvent('esx:setJob')
+AddEventHandler('esx:setJob', function(job)
+	PlayerData.job = job
 end)
 
 
