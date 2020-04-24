@@ -32,7 +32,7 @@ Citizen.CreateThread(function()
 		Citizen.Wait(10)
 	end
 
-	ESX.PlayerData = ESX.GetESX.PlayerData()
+	ESX.PlayerData = ESX.GetPlayerData()
 
 	while true do
 		if ESX.PlayerData.job.name == 'mechanic' and not registed then
