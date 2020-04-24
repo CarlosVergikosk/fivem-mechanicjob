@@ -4,11 +4,8 @@
 -------------------------    VERSION - B1G     ------------------------
 -----------------------------------------------------------------------
 
-ESX                = nil
-local PlayersHarvesting  = {}
-local PlayersCrafting = {}
-local PlayersCrafting2 = {}
-local PlayersCrafting3 = {}
+ESX = nil
+local PlayersHarvesting, PlayersCrafting, PlayersCrafting2, PlayersCrafting3  = {}, {}, {}, {}
 local Vehicles = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
@@ -63,7 +60,7 @@ local function Craft(source)
 			local xPlayer = ESX.GetPlayerFromId(source)
 			local GazBottleQuantity = xPlayer.getInventoryItem('gazbottle').count
 			if GazBottleQuantity <= 0 then
-				TriggerClientEvent('esx:showNotification', source, _U('not_enough_gas_can'))
+				xPlayer.showNotification(_U('not_enough_gas_can'))
 			else
 				xPlayer.removeInventoryItem('gazbottle', 1)
 				xPlayer.addInventoryItem('blowpipe', 1)
@@ -96,7 +93,7 @@ local function Craft2(source)
 			local FixToolQuantity = xPlayer.getInventoryItem('fixtool').count
 
 			if FixToolQuantity <= 0 then
-				TriggerClientEvent('esx:showNotification', source, _U('not_enough_repair_tools'))
+				xPlayer.showNotification(_U('not_enough_repair_tools'))
 			else
 				xPlayer.removeInventoryItem('fixtool', 1)
 				xPlayer.addInventoryItem('fixkit', 1)
@@ -129,7 +126,7 @@ local function Craft3(source)
 			local CaroToolQuantity = xPlayer.getInventoryItem('carotool').count
 
 			if CaroToolQuantity <= 0 then
-				TriggerClientEvent('esx:showNotification', source, _U('not_enough_body_tools'))
+				xPlayer.showNotification(_U('not_enough_body_tools'))
 			else
 				xPlayer.removeInventoryItem('carotool', 1)
 				xPlayer.addInventoryItem('carokit', 1)
@@ -151,13 +148,11 @@ end)
 RegisterServerEvent('esx_mechanicjob:setJob')
 AddEventHandler('esx_mechanicjob:setJob', function(identifier,job,grade)
 	local xTarget = ESX.GetPlayerFromIdentifier(identifier)
-		
-		if xTarget then
-			xTarget.setJob(job, grade)
-		end
 
+	if xTarget then
+		xTarget.setJob(job, grade)
+	end
 end)
-
 
 RegisterServerEvent('esx_mechanicjob:stopCraft3')
 AddEventHandler('esx_mechanicjob:stopCraft3', function()
@@ -178,14 +173,14 @@ AddEventHandler('esx_mechanicjob:getStockItem', function(itemName, count)
 
 			-- can the player carry the said amount of x item?
 			if sourceItem.limit ~= -1 and (sourceItem.count + count) > sourceItem.limit then
-				TriggerClientEvent('esx:showNotification', xPlayer.source, _U('player_cannot_hold'))
+				xPlayer.showNotification(_U('player_cannot_hold'))
 			else
 				inventory.removeItem(itemName, count)
 				xPlayer.addInventoryItem(itemName, count)
-				TriggerClientEvent('esx:showNotification', xPlayer.source, _U('have_withdrawn', count, item.label))
+				xPlayer.showNotification(_U('have_withdrawn', count, item.label))
 			end
 		else
-			TriggerClientEvent('esx:showNotification', xPlayer.source, _U('invalid_quantity'))
+			xPlayer.showNotification(_U('invalid_quantity'))
 		end
 	end)
 end)
@@ -231,16 +226,16 @@ AddEventHandler('esx_mechanicjob:putStockItems', function(itemName, count)
 			xPlayer.removeInventoryItem(itemName, count)
 			inventory.addItem(itemName, count)
 		else
-			TriggerClientEvent('esx:showNotification', xPlayer.source, _U('invalid_quantity'))
+			xPlayer.showNotification(_U('invalid_quantity'))
 		end
 
-		TriggerClientEvent('esx:showNotification', xPlayer.source, _U('have_deposited', count, item.label))
+		xPlayer.showNotification(_U('have_deposited', count, item.label))
 	end)
 end)
 
 ESX.RegisterServerCallback('esx_mechanicjob:getPlayerInventory', function(source, cb)
-	local xPlayer    = ESX.GetPlayerFromId(source)
-	local items      = xPlayer.inventory
+	local xPlayer = ESX.GetPlayerFromId(source)
+	local items = xPlayer.inventory
 
 	cb({items = items})
 end)
@@ -263,11 +258,11 @@ AddEventHandler('esx_mechanicjob:buyMod', function(price)
 		end)
 		if price < societyAccount.money then
 			TriggerClientEvent('esx_mechanicjob:installMod', _source)
-			TriggerClientEvent('esx:showNotification', _source, _U('purchased'))
+			xPlayer.showNotification(_U('purchased'))
 			societyAccount.removeMoney(price)
 		else
 			TriggerClientEvent('esx_mechanicjob:cancelInstallMod', _source)
-			TriggerClientEvent('esx:showNotification', _source, _U('not_enough_money'))
+			xPlayer.showNotification(_U('not_enough_money'))
 		end
 end)
 
@@ -314,32 +309,28 @@ ESX.RegisterServerCallback('esx_mechanicjob:getVehiclesPrices', function(source,
 end)
 
 ESX.RegisterUsableItem('blowpipe', function(source)
-	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
+	local xPlayer = ESX.GetPlayerFromId(source)
 
 	xPlayer.removeInventoryItem('blowpipe', 1)
 
-	TriggerClientEvent('esx_mechanicjob:onHijack', _source)
-	TriggerClientEvent('esx:showNotification', _source, _U('you_used_blowtorch'))
+	TriggerClientEvent('esx_mechanicjob:onHijack', source)
+	xPlayer.showNotification(_U('you_used_blowtorch'))
 end)
 
 ESX.RegisterUsableItem('fixkit', function(source)
-	local _source = source
 	local xPlayer  = ESX.GetPlayerFromId(source)
 
 	xPlayer.removeInventoryItem('fixkit', 1)
 
-	TriggerClientEvent('esx_mechanicjob:onFixkit', _source)
-	TriggerClientEvent('esx:showNotification', _source, _U('you_used_repair_kit'))
+	TriggerClientEvent('esx_mechanicjob:onFixkit', source)
+	xPlayer.showNotification(_U('you_used_repair_kit'))
 end)
 
 ESX.RegisterUsableItem('carokit', function(source)
-	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
+	local xPlayer = ESX.GetPlayerFromId(source)
 
 	xPlayer.removeInventoryItem('carokit', 1)
 
-	TriggerClientEvent('esx_mechanicjob:onCarokit', _source)
-	TriggerClientEvent('esx:showNotification', _source, _U('you_used_body_kit'))
+	TriggerClientEvent('esx_mechanicjob:onCarokit', source)
+	xPlayer.showNotification(_U('you_used_body_kit'))
 end)
-
