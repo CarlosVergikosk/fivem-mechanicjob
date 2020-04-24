@@ -910,12 +910,12 @@ function RegisterLS()
 			modType = 'plateIndex',
 			price = 1.1
 		},
-		Xenon = {
-			label = _U('headlights'),
-			parent = 'cosmetics',
-			modType = 22,
-			price = 0.72
-		},
+		modXenon = {
+		    label = _U('headlights'),
+		    parent = 'cosmetics',
+		    modType = 22,
+		    price = 0.72
+        	},
 		bodyparts = {
 			label = _U('bodyparts'),
 			parent = 'cosmetics',
