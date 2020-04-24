@@ -4,39 +4,19 @@
 -------------------------     AUTHOR - B1G     ------------------------
 -----------------------------------------------------------------------
 
-ESX                           = nil
+ESX = nil
 local HasAlreadyEnteredMarker, LastZone = false, nil
 local CurrentlyTowedVehicle, Blips = nil, {}
-local NPCTargetDeleterZone =  false
-local isDead, isBusy = false, false
-local PlayerData              = {}
-local LastPart                = nil
-local LastPartNum             = nil
-local LastEntity              = nil
-local CurrentAction           = nil
-local CurrentActionMsg        = ''
-local CurrentActionData       = {}
-local CurrentTask             = {}
-local isInMarker  = false
-local registed = false
-local inArea = false
-local state = false
+local isDead, isBusy, NPCTargetDeleterZone = false, false, false
+local LastPart, LastPartNum, LastEntity, CurrentAction = nil, nil, nil, nil
+local CurrentActionMsg  = ''
+local inArea, state, registed, isInMarker = false, false, false, false
 local currentZone = nil
-local Vehicles =		{}
-local lsMenuIsShowed	= false
-local isInLSMarker		= false
-local myCar				= {}
-local holdingPackage          = false
-local disabledWeapons         = false
-local APPbone	= 0
-local APPx 		= 0.0
-local APPy 		= 0.0
-local APPz 		= 0.0
-local APPxR 	= 0.0
-local APPyR 	= 0.0
-local APPzR 	= 0.0
-local dropkey 	= 161 -- Key to drop/get the props
-local closestEntity = 0
+local Vehicles, myCar, CurrentTask, CurrentActionData = {}, {}, {}, {}
+local holdingPackage, disabledWeapons, isInLSMarker, lsMenuIsShowed = false, false, false, false
+local APPbone, closestEntity = 0, 0
+local APPyR, APPzR, APPx, APPy, APPz, APPxR = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+local dropkey = 161 -- Key to drop/get the props
 
 local Interior = GetInteriorAtCoords(440.84, -983.14, 30.69)
 
@@ -47,13 +27,15 @@ Citizen.CreateThread(function()
 		TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 		Citizen.Wait(10)
 	end
-	PlayerData = ESX.GetPlayerData()
-	while PlayerData.job == nil do
+
+	while ESX.GetESX.PlayerData().job == nil do
 		Citizen.Wait(10)
 	end
-	
+
+	ESX.PlayerData = ESX.GetESX.PlayerData()
+
 	while true do
-		if PlayerData.job.name == 'mechanic' and not registed then
+		if ESX.PlayerData.job.name == 'mechanic' and not registed then
 			RegisterCommands()
 			registed = true
 		else
@@ -65,18 +47,14 @@ end)
 
 RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
-	PlayerData.job = job
+	ESX.PlayerData.job = job
 end)
-
-
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------
 --------------------------------------- ANIMATIONS PROPS ---------------------------------------
 ---------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 -- Prop list, you can add as much as you want
 attachPropList = {
@@ -105,14 +83,14 @@ AddEventHandler('inrp_mechanicjob:attachProp', function(attachModelSent,boneNumb
     holdingPackage = true
     local attachModel = GetHashKey(attachModelSent)
     boneNumber = boneNumberSent
-    SetCurrentPedWeapon(GetPlayerPed(-1), 0xA2719263) 
-    local bone = GetPedBoneIndex(GetPlayerPed(-1), boneNumberSent)
+    SetCurrentPedWeapon(PlayerPedId(), 0xA2719263) 
+    local bone = GetPedBoneIndex(PlayerPedId(), boneNumberSent)
     RequestModel(attachModel)
     while not HasModelLoaded(attachModel) do
         Citizen.Wait(100)
     end
     closestEntity = CreateObject(attachModel, 1.0, 1.0, 1.0, 1, 1, 0)
-    AttachEntityToEntity(closestEntity, GetPlayerPed(-1), bone, x, y, z, xR, yR, zR, 1, 1, 0, true, 2, 1)
+    AttachEntityToEntity(closestEntity, PlayerPedId(), bone, x, y, z, xR, yR, zR, 1, 1, 0, true, 2, 1)
 
     APPbone = bone
     APPx = x
@@ -133,18 +111,18 @@ end
 function randPickupAnim()
   local randAnim = math.random(7)
     loadAnimDict('random@domestic')
-    TaskPlayAnim(GetPlayerPed(-1),'random@domestic', 'pickup_low',5.0, 1.0, 1.0, 48, 0.0, 0, 0, 0)
+    TaskPlayAnim(PlayerPedId(),'random@domestic', 'pickup_low',5.0, 1.0, 1.0, 48, 0.0, 0, 0, 0)
 end
 
 function holdAnim()
     loadAnimDict( "anim@heists@box_carry@" )
-	TaskPlayAnim((GetPlayerPed(-1)),"anim@heists@box_carry@","idle",4.0, 1.0, -1,49,0, 0, 0, 0)
+	TaskPlayAnim((PlayerPedId()),"anim@heists@box_carry@","idle",4.0, 1.0, -1,49,0, 0, 0, 0)
 end
 
 Citizen.CreateThread( function()
     while true do 
 		Citizen.Wait(10)
-		if ((IsDisabledControlJustPressed(0, dropkey) or (GetHashKey("WEAPON_UNARMED") ~= GetSelectedPedWeapon(GetPlayerPed(-1)))) and (closestEntity ~= 0) and (PlayerData ~= nil) and (PlayerData.job.name == 'mechanic')) then
+		if ((IsDisabledControlJustPressed(0, dropkey) or (GetHashKey("WEAPON_UNARMED") ~= GetSelectedPedWeapon(PlayerPedId()))) and (closestEntity ~= 0) and (ESX.PlayerData ~= nil) and (ESX.PlayerData.job.name == 'mechanic')) then
 			local trackedEntities = {
 				'prop_roadcone02a',
 				'prop_tool_box_04',
@@ -155,7 +133,7 @@ Citizen.CreateThread( function()
 			}
 
 			local playerPed = PlayerPedId()
-			local coords    = GetEntityCoords(playerPed)
+			local coords = GetEntityCoords(playerPed)
 
 			local closestDistance = -1
 			closestEntity   = nil
@@ -175,20 +153,20 @@ Citizen.CreateThread( function()
 				end
 			end
 			if not holdingPackage then
-				local dst = GetDistanceBetweenCoords(GetEntityCoords(closestEntity) ,GetEntityCoords(GetPlayerPed(-1)),true)                 
+				local dst = GetDistanceBetweenCoords(GetEntityCoords(closestEntity) ,GetEntityCoords(PlayerPedId()),true)                 
 				if dst < 2 then
 					holdingPackage = true
 					if (closestEntityName == 'prop_roadcone02a') or (closestEntityName == 'prop_tool_box_04') or (closestEntityName == 'prop_cs_cardbox_01') then
 						randPickupAnim()
 					end
 					Citizen.Wait(350)
-					ClearPedTasks(GetPlayerPed(-1))
-					ClearPedSecondaryTask(GetPlayerPed(-1))
+					ClearPedTasks(PlayerPedId())
+					ClearPedSecondaryTask(PlayerPedId())
 					if (closestEntityName == 'prop_cs_trolley_01') or (closestEntityName == 'prop_engine_hoist') or (closestEntityName == 'imp_prop_car_jack_01a') or (closestEntityName == 'prop_cs_cardbox_01') then
 						holdAnim()
 					end
 					Citizen.Wait(350)
-					AttachEntityToEntity(closestEntity, GetPlayerPed(-1),GetPedBoneIndex(GetPlayerPed(-1), attachPropList[closestEntityName]["bone"]), attachPropList[closestEntityName]["x"], attachPropList[closestEntityName]["y"], attachPropList[closestEntityName]["z"], attachPropList[closestEntityName]["xR"], attachPropList[closestEntityName]["yR"], attachPropList[closestEntityName]["zR"], 1, 1, 0, true, 2, 1)
+					AttachEntityToEntity(closestEntity, PlayerPedId(),GetPedBoneIndex(PlayerPedId(), attachPropList[closestEntityName]["bone"]), attachPropList[closestEntityName]["x"], attachPropList[closestEntityName]["y"], attachPropList[closestEntityName]["z"], attachPropList[closestEntityName]["xR"], attachPropList[closestEntityName]["yR"], attachPropList[closestEntityName]["zR"], 1, 1, 0, true, 2, 1)
 				end
 			else
 				holdingPackage = false
@@ -197,8 +175,8 @@ Citizen.CreateThread( function()
 				end
 				Citizen.Wait(350)
 				DetachEntity(closestEntity)
-				ClearPedTasks(GetPlayerPed(-1))
-				ClearPedSecondaryTask(GetPlayerPed(-1))
+				ClearPedTasks(PlayerPedId())
+				ClearPedSecondaryTask(PlayerPedId())
 			end
 		end
 	end
@@ -253,46 +231,38 @@ end)
 RegisterNetEvent('inrp_mechanicjob:removeall')
 AddEventHandler('inrp_mechanicjob:removeall', function()
     TriggerEvent("disabledWeapons",false)
-	ClearPedTasks(GetPlayerPed(-1))
-	ClearPedSecondaryTask(GetPlayerPed(-1))
+	ClearPedTasks(PlayerPedId())
+	ClearPedSecondaryTask(PlayerPedId())
 	Citizen.Wait(500)
 	DetachEntity(closestEntity)
 end)
 
 RegisterNetEvent("disabledWeapons")
 AddEventHandler("disabledWeapons", function(sentinfo)
-    SetCurrentPedWeapon(GetPlayerPed(-1), GetHashKey("weapon_unarmed"), 1)
+    SetCurrentPedWeapon(PlayerPedId(), GetHashKey("weapon_unarmed"), 1)
     disabledWeapons = sentinfo
 	removeAttachedProp()
 	holdingPackage = false
 end)
 
-
-
-
-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------
 --------------------------------------- MECHANIC JOB ---------------------------------------
 ---------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-	
+------------------------------------------------------------------------------------------------------------------------------------------------------------	
 
 function OpenMechanicActionsMenu()
 	local playerPed = PlayerPedId()
-	local grade = PlayerData.job.grade_name
+	local grade = ESX.PlayerData.job.grade_name
 	local elements = {
-		{label = _U('vehicle_list'),   value = 'vehicle_list'},
-		{label = _U('work_wear'),      value = 'cloakroom'},
-		{label = _U('civ_wear'),       value = 'cloakroom2'},
-		{label = _U('deposit_stock'),  value = 'put_stock'},
+		{label = _U('vehicle_list'), value = 'vehicle_list'},
+		{label = _U('work_wear'), value = 'cloakroom'},
+		{label = _U('civ_wear'), value = 'cloakroom2'},
+		{label = _U('deposit_stock'), value = 'put_stock'},
 		{label = _U('withdraw_stock'), value = 'get_stock'}
 	}
 
-	if Config.EnablePlayerManagement and PlayerData.job and grade == 'boss' then
+	if Config.EnablePlayerManagement and ESX.PlayerData.job and grade == 'boss' then
 		table.insert(elements, {label = _U('boss_actions'), value = 'boss_actions'})
 	end
 
@@ -335,15 +305,13 @@ function OpenMechanicActionsMenu()
 						menu.close()
 					end)
 				end, 'mechanic')
-
 			else
-
 				local elements = {
 					{label = _U('flat_bed'),  value = 'flatbed'},
 					{label = _U('tow_truck'), value = 'towtruck2'}
 				}
 
-				if Config.EnablePlayerManagement and PlayerData.job and (grade == 'boss' or grade == 'chief' or grade == 'einrp_mechanicjoberimente') then
+				if Config.EnablePlayerManagement and ESX.PlayerData.job and (grade == 'boss' or grade == 'chief' or grade == 'einrp_mechanicjoberimente') then
 					table.insert(elements, {label = 'SlamVan', value = 'slamvan3'})
 				end
 
@@ -371,13 +339,11 @@ function OpenMechanicActionsMenu()
 							end
 						end, 'mechanic')
 					end
-
 					menu.close()
 				end, function(data, menu)
 					menu.close()
 					OpenMechanicActionsMenu()
 				end)
-
 			end
 		elseif data.current.value == 'cloakroom' then
 			menu.close()
@@ -405,14 +371,14 @@ function OpenMechanicActionsMenu()
 	end, function(data, menu)
 		menu.close()
 
-		CurrentAction     = 'mechanic_actions_menu'
+		CurrentAction = 'mechanic_actions_menu'
 		CurrentActionData = {}
 	end)
 end
 
 function OpenMechanicHarvestMenu()
-	local grade = PlayerData.job.grade_name
-	if Config.EnablePlayerManagement and PlayerData.job.name == 'mechanic' then
+	local grade = ESX.PlayerData.job.grade_name
+	if Config.EnablePlayerManagement and ESX.PlayerData.job.name == 'mechanic' then
 		local elements = {
 			{label = _U('gas_can'), value = 'gazbottle'},
 			{label = _U('repair_tools'), value = 'fixtool'},
@@ -443,7 +409,7 @@ function OpenMechanicHarvestMenu()
 end
 
 function OpenMechanicCraftMenu()
-	if Config.EnablePlayerManagement and PlayerData.job.name == 'mechanic' then
+	if Config.EnablePlayerManagement and ESX.PlayerData.job.name == 'mechanic' then
 		local elements = {
 			{label = _U('blowtorch'),  value = 'blow_pipe'},
 			{label = _U('repair_kit'), value = 'fix_kit'},
@@ -478,8 +444,8 @@ function OpenMechanicCraftMenu()
 end
 
 function RegisterCommands()
-	PlayerData = ESX.GetPlayerData()
-	if PlayerData.job.name == 'mechanic' then
+	ESX.PlayerData = ESX.GetESX.PlayerData()
+	if ESX.PlayerData.job.name == 'mechanic' then
 		RegisterCommand("faturas", function(source, args, raw) --change command here
 			ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'billing', {
 				title = _U('invoice_amount')
@@ -505,8 +471,8 @@ function RegisterCommands()
 
 		RegisterCommand("limparveiculo", function(source, args, raw) --change command here
 			local playerPed = PlayerPedId()
-			local vehicle   = ESX.Game.GetVehicleInDirection()
-			local coords    = GetEntityCoords(playerPed)
+			local vehicle = ESX.Game.GetVehicleInDirection()
+			local coords = GetEntityCoords(playerPed)
 
 			if IsPedSittingInAnyVehicle(playerPed) then
 				exports['mythic_notify']:SendAlert('error', 'Tens de estar fora do veículo!')
@@ -591,8 +557,8 @@ function RegisterCommands()
 		RegisterCommand("re", function() -- remove entity 
 			TriggerEvent("disabledWeapons",false)
 			DeleteEntity(closestEntity)
-			ClearPedTasks(GetPlayerPed(-1))
-			ClearPedSecondaryTask(GetPlayerPed(-1))
+			ClearPedTasks(PlayerPedId())
+			ClearPedSecondaryTask(PlayerPedId())
 		end, false)
 		
 		RegisterCommand("prop_cs_trolley_01", function(source, args, raw)
@@ -860,8 +826,6 @@ AddEventHandler('esx_mechanicjob:onFixkit', function()
 end)
 
 AddEventHandler('esx_mechanicjob:hasEnteredMarker', function(zone)
-	
-
 	if zone == 'MechanicActions' then
 		CurrentAction     = 'mechanic_actions_menu'
 		CurrentActionData = {}
@@ -886,7 +850,7 @@ AddEventHandler('esx_mechanicjob:hasEnteredMarker', function(zone)
 		if IsPedInAnyVehicle(playerPed, true) then
 			local vehicle = GetVehiclePedIsIn(playerPed,  false)
 
-			CurrentAction     = 'delete_vehicle'
+			CurrentAction  = 'delete_vehicle'
 			CurrentActionData = {vehicle = vehicle}
 		end
 	end
@@ -920,8 +884,8 @@ end)
 
 -- Create Blips
 Citizen.CreateThread(function()
-
 	local blip = AddBlipForCoord(Config.Blip.Pos.x, Config.Blip.Pos.y, Config.Blip.Pos.z)
+
 	SetBlipSprite (blip, Config.Blip.Sprite)
 	SetBlipDisplay(blip, Config.Blip.Display)
 	SetBlipScale  (blip, Config.Blip.Scale)
@@ -931,7 +895,6 @@ Citizen.CreateThread(function()
 	BeginTextCommandSetBlipName("STRING")
 	AddTextComponentString(_U('mechanic'))
 	EndTextCommandSetBlipName(blip)
-
 end)
 
 -- Display markers
@@ -940,7 +903,7 @@ Citizen.CreateThread(function()
 	while true do
 		Citizen.Wait(10)
 
-		if PlayerData.job and PlayerData.job.name == 'mechanic' then
+		if ESX.PlayerData.job and ESX.PlayerData.job.name == 'mechanic' then
 			local coords, letSleep = GetEntityCoords(PlayerPedId()), true
 
 			for k,v in pairs(Config.Zones) do
@@ -975,14 +938,14 @@ Citizen.CreateThread(function()
 			DisableControlAction(27, 75, true) -- Disable exit vehicle
 		end
 		
-		if Config.EnableEmploy and PlayerData.job then
+		if Config.EnableEmploy and ESX.PlayerData.job then
 			local coords = GetEntityCoords(PlayerPedId(-1))	
-			if (GetDistanceBetweenCoords(coords,Config.Employ.Coords.x,Config.Employ.Coords.y,Config.Employ.Coords.z) < 3.5) and (PlayerData.job.name ~= 'mechanic') then
+			if (GetDistanceBetweenCoords(coords,Config.Employ.Coords.x,Config.Employ.Coords.y,Config.Employ.Coords.z) < 3.5) and (ESX.PlayerData.job.name ~= 'mechanic') then
 				for i=1,#Config.Employ.Workers do 
-					if Config.Employ.Workers[i].identifier == PlayerData.identifier then
+					if Config.Employ.Workers[i].identifier == ESX.PlayerData.identifier then
 						DrawText3Ds(Config.Employ.Coords.x,Config.Employ.Coords.y,Config.Employ.Coords.z, 'Pressiona ~g~[E] ~w~para entrar ao serviço!')
 						if IsControlJustReleased(0, 38) then
-							TriggerServerEvent('esx_mechanicjob:setJob',PlayerData.identifier,'mechanic',Config.Employ.Workers[i].grade)
+							TriggerServerEvent('esx_mechanicjob:setJob',ESX.PlayerData.identifier,'mechanic',Config.Employ.Workers[i].grade)
 							exports['mythic_notify']:SendAlert('success', 'Entras-te ao serviço!')
 						end
 					end
@@ -997,9 +960,8 @@ Citizen.CreateThread(function()
 	while true do
 		Citizen.Wait(10)
 
-		if PlayerData.job and PlayerData.job.name == 'mechanic' then
-
-			local coords      = GetEntityCoords(PlayerPedId())
+		if ESX.PlayerData.job and ESX.PlayerData.job.name == 'mechanic' then
+			local coords = GetEntityCoords(PlayerPedId())
 			local isInMarker  = false
 			local currentZone = nil
 			
@@ -1041,9 +1003,7 @@ Citizen.CreateThread(function()
 		Citizen.Wait(10)
 
 		if CurrentAction then
-
-			if IsControlJustReleased(0, 38) and PlayerData.job and PlayerData.job.name == 'mechanic' then
-
+			if IsControlJustReleased(0, 38) and ESX.PlayerData.job and ESX.PlayerData.job.name == 'mechanic' then
 				if CurrentAction == 'mechanic_actions_menu' then
 					OpenMechanicActionsMenu()
 				elseif CurrentAction == 'mechanic_harvest_menu' then
@@ -1055,12 +1015,9 @@ Citizen.CreateThread(function()
 				elseif CurrentAction == 'delete_vehicle' then
 
 					if Config.EnableSocietyOwnedVehicles then
-
 						local vehicleProps = ESX.Game.GetVehicleProperties(CurrentActionData.vehicle)
 						TriggerServerEvent('esx_society:putVehicleInGarage', 'mechanic', vehicleProps)
-
 					else
-
 						if
 							GetEntityModel(vehicle) == GetHashKey('flatbed')   or
 							GetEntityModel(vehicle) == GetHashKey('towtruck2') or
@@ -1068,27 +1025,24 @@ Citizen.CreateThread(function()
 						then
 							TriggerServerEvent('esx_service:disableService', 'mechanic')
 						end
-
 					end
 
 					ESX.Game.DeleteVehicle(CurrentActionData.vehicle)
 				end
 			end
 		end
-
 	end
 end)
 
 function OpenLSAction()
-
 	if IsControlJustReleased(0, 38) and not lsMenuIsShowed then
-		if ((PlayerData.job ~= nil and PlayerData.job.name == 'mechanic') or Config.IsMechanicJobOnly == false) then
+		if ((ESX.PlayerData.job ~= nil and ESX.PlayerData.job.name == 'mechanic') or Config.IsMechanicJobOnly == false) then
 			lsMenuIsShowed = true
-			local coords 		= GetEntityCoords(GetPlayerPed(-1))
+			local coords 		= GetEntityCoords(PlayerPedId())
 			local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 71)
 			if (vehicle ~= nil) then
 				FreezeEntityPosition(vehicle, true)
-				FreezeEntityPosition(GetPlayerPed(-1), true)
+				FreezeEntityPosition(PlayerPedId(), true)
 				myCar = ESX.Game.GetVehicleProperties(vehicle)
 				ESX.UI.Menu.CloseAll()
 				GetAction({value = 'main'})
@@ -1101,18 +1055,15 @@ function OpenLSAction()
 	if not isInLSMarker and hasAlreadyEnteredMarker then
 		hasAlreadyEnteredMarker = false
 	end
-
 end
 
 AddEventHandler('esx:onPlayerDeath', function(data)
 	isDead = true
 end)
 
-AddEventHandler('playerSpawned', function(spawn)
+AddEventHandler('esx:onPlayerSpawn', function(spawn)
 	isDead = false
 end)
-
-
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1120,8 +1071,6 @@ end)
 -----------------------------------------------RADIALMENU--------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 Citizen.CreateThread(function()
     -- Update every frame
@@ -1133,7 +1082,7 @@ Citizen.CreateThread(function()
             if menuConfig:enableMenu() then
                 -- When keybind is pressed toggle UI
                 local keybindControl = menuConfig.data.keybind
-				if ((IsControlJustReleased(0, keybindControl)) and (PlayerData.job.name == 'mechanic')) then
+				if ((IsControlJustReleased(0, keybindControl)) and (ESX.PlayerData.job.name == 'mechanic')) then
 					-- Init UI
 					showMenu = true
 					SendNUIMessage({
@@ -1187,9 +1136,7 @@ RegisterNUICallback('closemenu', function(data, cb)
     -- Clear focus and destroy UI
     showMenu = false
     SetNuiFocus(false, false)
-    SendNUIMessage({
-        type = 'destroy'
-    })
+    SendNUIMessage({type = 'destroy'})
 
     -- Play sound
     PlaySoundFrontend(-1, "NAV", "HUD_AMMO_SHOP_SOUNDSET", 1)
@@ -1226,7 +1173,7 @@ end)
 
 RegisterNetEvent('esx:playerLoaded')
 AddEventHandler('esx:playerLoaded', function(xPlayer)
-	PlayerData = xPlayer
+	ESX.PlayerData = xPlayer
 	ESX.TriggerServerCallback('esx_mechanicjob:getVehiclesPrices', function(vehicles)
 		Vehicles = vehicles
 	end)
@@ -1234,7 +1181,7 @@ end)
 
 RegisterNetEvent('esx_mechanicjob:installMod')
 AddEventHandler('esx_mechanicjob:installMod', function()
-	local coords 		= GetEntityCoords(GetPlayerPed(-1))
+	local coords = GetEntityCoords(PlayerPedId())
 	local vehicle = GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 	myCar = ESX.Game.GetVehicleProperties(vehicle)
 	TriggerServerEvent('esx_mechanicjob:refreshOwnedVehicle', myCar)
@@ -1242,21 +1189,20 @@ end)
 
 RegisterNetEvent('esx_mechanicjob:cancelInstallMod')
 AddEventHandler('esx_mechanicjob:cancelInstallMod', function()
-	local coords 		= GetEntityCoords(GetPlayerPed(-1))
-	local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
+	local coords = GetEntityCoords(PlayerPedId())
+	local vehicle = GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 	ESX.Game.SetVehicleProperties(vehicle, myCar)
 end)
 
 function OpenLSMenu(elems, menuName, menuTitle, parent)
-	ESX.UI.Menu.Open('default', GetCurrentResourceName(), menuName,
-	{
-		title    = menuTitle,
-		align    = 'top-left',
+	ESX.UI.Menu.Open('default', GetCurrentResourceName(), menuName, {
+		title = menuTitle,
+		align = 'top-left',
 		elements = elems
 	}, function(data, menu)
 		local isRimMod = false
 		local found = false
-		local coords 		= GetEntityCoords(GetPlayerPed(-1))
+		local coords 		= GetEntityCoords(PlayerPedId())
 		local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 		if data.current.modType == "modFrontWheels" then
 			isRimMod = true
@@ -1303,15 +1249,15 @@ function OpenLSMenu(elems, menuName, menuTitle, parent)
 		menu.close()
 		TriggerEvent('esx_mechanicjob:cancelInstallMod')
 		local playerPed = PlayerPedId()
-		local coords 		= GetEntityCoords(GetPlayerPed(-1))
+		local coords 		= GetEntityCoords(PlayerPedId())
 		local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 		SetVehicleDoorsShut(vehicle, false)
 		if parent == nil then
 			lsMenuIsShowed = false
-			local coords 		= GetEntityCoords(GetPlayerPed(-1))
+			local coords 		= GetEntityCoords(PlayerPedId())
 			local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 			FreezeEntityPosition(vehicle, false)
-			FreezeEntityPosition(GetPlayerPed(-1), false)
+			FreezeEntityPosition(PlayerPedId(), false)
 			myCar = {}
 		end
 	end, function(data, menu) -- on change
@@ -1341,8 +1287,8 @@ function DrawText3Ds(x, y, z, text)
 end
 
 function UpdateMods(data)
-	local coords 		= GetEntityCoords(GetPlayerPed(-1))
-	local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
+	local coords = GetEntityCoords(PlayerPedId())
+	local vehicle  = GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 	if data.modType ~= nil then
 		local props = {}
 		
@@ -1374,11 +1320,11 @@ function GetAction(data)
 	local menuTitle = ''
 	local parent    = nil
 	local playerPed = PlayerPedId()
-	local coords 		= GetEntityCoords(GetPlayerPed(-1))
-	local vehicle  		= GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
+	local coords = GetEntityCoords(PlayerPedId())
+	local vehicle  = GetClosestVehicle(coords.x, coords.y, coords.z, 3.0, false, 23)
 	local currentMods = ESX.Game.GetVehicleProperties(vehicle)
 	FreezeEntityPosition(vehicle, true)
-	FreezeEntityPosition(GetPlayerPed(-1), true)
+	FreezeEntityPosition(PlayerPedId(), true)
 	myCar = currentMods
 	if data.value == 'modSpeakers' or
 		data.value == 'modTrunk' or
@@ -1571,30 +1517,17 @@ function GetAction(data)
 	OpenLSMenu(elements, menuName, menuTitle, parent)
 end
 
-
-
-
-
 --------------------------------------------------------------------------------------------------------------------------------
-
 --------------------------------------------------------------------------------------------------------------------------------
-
 --------------------------- CAR LIFT -------------------------------------------------------------------------------------------
-
 --------------------------------------------------------------------------------------------------------------------------------
-
 --------------------------------------------------------------------------------------------------------------------------------
-
-
-
 
 local elevatorProp = nil
-local elevatorUp = false
-local elevatorDown = false
+local elevatorDown, elevatorUp = false, false
 local elevatorBaseX = -223.5853
 local elevatorBaseY = -1327.158
 local elevatorBaseZ = 29.8
-
 
 function deleteObject(object)
 	return Citizen.InvokeNative(0x539E0AE3E6634B9F, Citizen.PointerValueIntInitialized(object))
@@ -1610,12 +1543,12 @@ end
 
 function spawnProp(propName, x, y, z)
 	local model = GetHashKey(propName)
-	
+
 	if IsModelValid(model) then
-		local pos = GetEntityCoords(GetPlayerPed(-1), true)
-	
+		local pos = GetEntityCoords(PlayerPedId(), true)
+
 		local forward = 5.0
-		local heading = GetEntityHeading(GetPlayerPed(-1))
+		local heading = GetEntityHeading(PlayerPedId())
 		local xVector = forward * math.sin(math.rad(heading)) * -1.0
 		local yVector = forward * math.cos(math.rad(heading))
 		
@@ -1624,7 +1557,7 @@ function spawnProp(propName, x, y, z)
 		SetNetworkIdExistsOnAllMachines(propNetId, true)
 		NetworkSetNetworkIdDynamic(propNetId, true)
 		SetNetworkIdCanMigrate(propNetId, false)
-		
+
 		SetEntityLodDist(elevatorProp, 0xFFFF)
 		SetEntityCollision(elevatorProp, true, true)
 		FreezeEntityPosition(elevatorProp, true)
@@ -1635,7 +1568,7 @@ end
 function Main()
     Menu.SetupMenu("mainmenu", "BENNY'S")
     Menu.Switch(nil, "mainmenu")
-	
+
 	Menu.addOption("mainmenu", function() if (Menu.Option("Turn on Machine")) then
 		spawnProp("nacelle", elevatorBaseX, elevatorBaseY, elevatorBaseZ)
 	end end)
@@ -1676,7 +1609,7 @@ Citizen.CreateThread(function()
 			end
 		end
 		
-		if ((GetDistanceBetweenCoords(Config.Zones.CarLift.Pos.x, Config.Zones.CarLift.Pos.y, Config.Zones.CarLift.Pos.z, GetEntityCoords(GetPlayerPed(-1), false).x, GetEntityCoords(GetPlayerPed(-1), false).y, GetEntityCoords(GetPlayerPed(-1), false).z - 1) < Config.DrawDistance) and (PlayerData.job.name == 'mechanic')) then
+		if ((GetDistanceBetweenCoords(Config.Zones.CarLift.Pos.x, Config.Zones.CarLift.Pos.y, Config.Zones.CarLift.Pos.z, GetEntityCoords(PlayerPedId(), false).x, GetEntityCoords(PlayerPedId(), false).y, GetEntityCoords(PlayerPedId(), false).z - 1) < Config.DrawDistance) and (ESX.PlayerData.job.name == 'mechanic')) then
 			if IsControlJustReleased(1, 51) then
 				PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET", true)
 				garage_menu = not garage_menu
@@ -1701,7 +1634,7 @@ Citizen.CreateThread(function()
 				end
 			end
 		end
-		
+
         if garage_menu then
 			DisableControlAction(1, 22, true)
 			DisableControlAction(1, 0, true)
