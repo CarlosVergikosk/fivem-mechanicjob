@@ -444,7 +444,6 @@ function OpenMechanicCraftMenu()
 end
 
 function RegisterCommands()
-	ESX.PlayerData = ESX.GetESX.PlayerData()
 	if ESX.PlayerData.job.name == 'mechanic' then
 		RegisterCommand("faturas", function(source, args, raw) --change command here
 			ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'billing', {
